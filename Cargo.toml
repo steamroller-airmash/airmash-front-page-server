@@ -1,0 +1,6 @@
+[package]
+name = "airmash-front-page-server"
+version = "0.1.0"
+authors = ["STEAMROLLER"]
+
+[dependencies]
