@@ -4,3 +4,16 @@ version = "0.1.0"
 authors = ["STEAMROLLER"]
 
 [dependencies]
+actix = "*"
+actix-web = "*"
+serde = { version="*", features=["derive"]  }
+serde_json = "*"
+futures = "0.1"
+env_logger = "*"
+hyper = "0.12"
+hyper-tls = "0.3"
+lazy_static = "*"
+log = "*"
+
+#[dependencies.geolocate-ip]
+#git = "https://github.com/phantomical/rust-geolocate-ip"
