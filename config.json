@@ -7,14 +7,6 @@
 			"id": "dev",
 			"games": [
 				{
-					"url": "http://localhost:3501",
-					"type": 1,
-					"id": "tmp",
-					"name": "local",
-					"nameShort": "local",
-					"host": "local"
-				},
-				{
 					"url": "https://dev.airmash.steamroller.tk",
 					"type": 1,
 					"id": "dev",

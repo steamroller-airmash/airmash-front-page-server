@@ -41,11 +41,9 @@ fn main() {
 	server::new(move || {
 		App::new()
 			.middleware(middleware::Logger::default())
-			.resource("/", move |r| {
+			.resource("/games", move |r| {
 				r.method(http::Method::GET).f(
-					move |req| -> Box<Future<Item = HttpResponse, Error = Error>> {
-						info!("{:?}", req);
-
+					move |_| -> Box<Future<Item = HttpResponse, Error = Error>> {
 						let https = HttpsConnector::new(4).unwrap();
 						let client: Client<_, Body> = Client::builder()
 							.build(https);
@@ -57,7 +55,6 @@ fn main() {
 							let mut requests = vec![];
 
 							for server in region.games.iter() {
-								info!("{:?}", server);
 								requests.push(
 									client
 										.get(server.url.parse().unwrap())
@@ -71,8 +68,6 @@ fn main() {
 											)
 										})
 										.map(|v: Vec<u8>| {
-											println!("{:?}", v);
-											println!("Incoming text: {}", str::from_utf8(&v).unwrap());
 											serde_json::from_slice(&v).unwrap()
 										})
 										.map(|v: ServerResponse| v.players)
@@ -108,7 +103,11 @@ fn main() {
 									data: regions,
 								})
 								.map(|spec| serde_json::to_string(&spec).unwrap())
-								.map(|resp| HttpResponse::Ok().body(resp))
+								.map(|resp| {
+									HttpResponse::Ok()
+										.header(http::header::CONTENT_TYPE, "application/json; charset=utf-8")
+										.body(resp)
+								})
 								.map_err(|e| e.into()),
 						)
 					},

@@ -1,0 +1,13 @@
+
+version: "2"
+
+services:
+  server:
+    image: phantomical/airmash-front-page-server
+    ports:
+      - '8000:9000'
+  watchtower:
+    image: v2tec/watchtower
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    command: --cleanup
