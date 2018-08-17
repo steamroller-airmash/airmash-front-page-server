@@ -3,6 +3,10 @@ name = "airmash-front-page-server"
 version = "0.1.0"
 authors = ["STEAMROLLER"]
 
+[profile.release]
+lto = true
+debug = true
+
 [dependencies]
 actix = "*"
 actix-web = "*"
@@ -14,6 +18,5 @@ hyper = "0.12"
 hyper-tls = "0.3"
 lazy_static = "*"
 log = "*"
-
-#[dependencies.geolocate-ip]
-#git = "https://github.com/phantomical/rust-geolocate-ip"
+sentry = "0.7"
+sentry-actix = "*"

@@ -6,6 +6,8 @@ services:
     image: phantomical/airmash-front-page-server
     ports:
       - '8000:9000'
+    environment:
+      SENTRY_DSN: ${SENTRY_DSN}
   watchtower:
     image: v2tec/watchtower
     volumes:

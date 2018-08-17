@@ -11,6 +11,8 @@ extern crate serde_json;
 extern crate lazy_static;
 #[macro_use]
 extern crate log;
+extern crate sentry;
+extern crate sentry_actix;
 
 mod spec;
 
@@ -19,6 +21,9 @@ use actix_web::http::StatusCode;
 use actix_web::{http, middleware, server, App, Error, HttpResponse};
 use futures::future::join_all;
 use futures::{Future, Stream};
+
+use sentry::{Hub, Level};
+use sentry_actix::{SentryMiddleware, ActixWebHubExt};
 
 use hyper::{Body, Client};
 use hyper_tls::HttpsConnector;
@@ -37,16 +42,24 @@ fn main() {
 	std::env::set_var("RUST_LOG", "info");
 	std::env::set_var("RUST_BACKTRACE", "1");
 	env_logger::init();
+    sentry::init(());
 
 	server::new(move || {
 		App::new()
 			.middleware(middleware::Logger::default())
+			.middleware(SentryMiddleware::new())
 			.resource("/games", move |r| {
 				r.method(http::Method::GET).f(
-					move |_| -> Box<Future<Item = HttpResponse, Error = Error>> {
+					move |req| -> Box<Future<Item = HttpResponse, Error = Error>> {
 						let https = HttpsConnector::new(4).unwrap();
 						let client: Client<_, Body> = Client::builder()
 							.build(https);
+
+						let headers = req.request().headers();
+						let country = headers.get("CF-IPCountry")
+							.map(|x| x.to_str().unwrap_or("XX"))
+							.unwrap_or("XX")
+							.to_owned();
 
 						let mut regions = vec![];
 						let config = CONFIG.clone();
@@ -99,7 +112,7 @@ fn main() {
 							join_all(regions)
 								.map(|regions| GameSpec {
 									protocol: 5,
-									country: "XX".to_owned(),
+									country: country,
 									data: regions,
 								})
 								.map(|spec| serde_json::to_string(&spec).unwrap())
@@ -110,6 +123,17 @@ fn main() {
 								})
 								.map_err(|e| e.into()),
 						)
+					},
+				)
+			})
+			.resource("/clienterror", move |r| {
+				r.method(http::Method::POST).f(
+					move |req| -> HttpResponse {
+						let hub = Hub::from_request(req);
+						hub.capture_message("A client error occurred", Level::Error);
+
+						HttpResponse::Ok()
+							.body("")
 					},
 				)
 			})
