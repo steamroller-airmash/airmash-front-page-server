@@ -18,13 +18,13 @@ mod spec;
 
 use actix_web::error::InternalError;
 use actix_web::http::StatusCode;
-use actix_web::{http, middleware, server, App, Error, HttpResponse, HttpRequest};
+use actix_web::{http, middleware, server, App, Error, HttpRequest, HttpResponse};
 use futures::future::join_all;
 use futures::{Future, Stream};
 use http::Method;
 
 use sentry::{Hub, Level};
-use sentry_actix::{SentryMiddleware, ActixWebHubExt};
+use sentry_actix::{ActixWebHubExt, SentryMiddleware};
 
 use hyper::{Body, Client};
 use hyper_tls::HttpsConnector;
@@ -44,11 +44,11 @@ lazy_static! {
 /// have
 fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>> {
 	let https = HttpsConnector::new(4).unwrap();
-	let client: Client<_, Body> = Client::builder()
-		.build(https);
+	let client: Client<_, Body> = Client::builder().build(https);
 
 	let headers = req.request().headers();
-	let country = headers.get("CF-IPCountry")
+	let country = headers
+		.get("CF-IPCountry")
 		.map(|x| x.to_str().unwrap_or("XX"))
 		.unwrap_or("XX")
 		.to_owned();
@@ -72,9 +72,7 @@ fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>> {
 							},
 						)
 					})
-					.map(|v: Vec<u8>| {
-						serde_json::from_slice(&v).unwrap()
-					})
+					.map(|v: Vec<u8>| serde_json::from_slice(&v).unwrap())
 					.map(|v: ServerResponse| v.players)
 					.map_err(|e| {
 						error!("Error: {:?}", e);
@@ -110,21 +108,28 @@ fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>> {
 			.map(|spec| serde_json::to_string(&spec).unwrap())
 			.map(|resp| {
 				HttpResponse::Ok()
-					.header(http::header::CONTENT_TYPE, "application/json; charset=utf-8")
+					.header(
+						http::header::CONTENT_TYPE,
+						"application/json; charset=utf-8",
+					)
 					.body(resp)
 			})
 			.map_err(|e| e.into()),
 	)
 }
 
+/// Log the client error to sentry for investigation
+/// later. If a sentry dsn is not provided in the
+/// SENTRY_DSN this is a no-op
 fn clienterror(req: &HttpRequest) -> HttpResponse {
 	let hub = Hub::from_request(req);
 	hub.capture_message("A client error occurred", Level::Error);
 
-	HttpResponse::Ok()
-		.body("")
+	HttpResponse::Ok().body("")
 }
 
+/// Not sure what this should do yet. One option
+/// would be to forward to the official servers
 fn login(_: &HttpRequest) -> HttpResponse {
 	HttpResponse::NotImplemented().body("")
 }
@@ -133,7 +138,7 @@ fn main() {
 	std::env::set_var("RUST_LOG", "info");
 	std::env::set_var("RUST_BACKTRACE", "1");
 	env_logger::init();
-    sentry::init(());
+	sentry::init(());
 
 	server::new(move || {
 		App::new()
