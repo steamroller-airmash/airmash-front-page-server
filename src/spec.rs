@@ -3,7 +3,6 @@ use serde_json;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ServerSpec {
-	#[serde(skip_serializing)]
 	pub url: String,
 	#[serde(rename = "type")]
 	pub ty: u8,
@@ -12,7 +11,7 @@ pub struct ServerSpec {
 	#[serde(rename = "nameShort")]
 	pub name_short: String,
 	#[serde(skip_deserializing)]
-	pub players: u32,
+	pub players: Option<u32>,
 	pub host: String,
 }
 
