@@ -16,8 +16,8 @@ extern crate log;
 extern crate sentry;
 extern crate sentry_actix;
 
-mod spec;
 mod games;
+mod spec;
 
 use actix_web::{http, middleware, server, App, HttpRequest, HttpResponse};
 use http::Method;
@@ -27,8 +27,8 @@ use sentry_actix::{ActixWebHubExt, SentryMiddleware};
 
 use std::str;
 
-use spec::*;
 use games::games;
+use spec::*;
 
 const CONFIG_FILE: &'static str = include_str!("../config.json");
 
