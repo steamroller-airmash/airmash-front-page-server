@@ -23,7 +23,7 @@ fn fetch_server_players(
 			let url = url.clone();
 			move |e| {
 				warn!(
-					"Unable to connect to {} to fetch player count. Error was {}",
+					"Unable to connect to {} to fetch player count. Error description: {}",
 					url, e
 				);
 			}
