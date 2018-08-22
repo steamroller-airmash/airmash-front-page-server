@@ -1,7 +1,13 @@
 [package]
 name = "airmash-front-page-server"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["STEAMROLLER"]
+license = "APACHE-2.0 OR MIT"
+description = "Dynamic Endpoint Backend for Airmash Frontpage"
+publish = false
+repository = 'https://github.com/steamroller-airmash/airmash-front-page-server'
+readme = "README.md"
+
 
 [profile.release]
 lto = true
