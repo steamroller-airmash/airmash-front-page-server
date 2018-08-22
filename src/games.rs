@@ -13,6 +13,10 @@ use actix_web::{http, Error, HttpRequest, HttpResponse};
 use spec::*;
 use CONFIG;
 
+/// Get the player count from a specific server.
+/// Note that the future returned from this can
+/// never fail (hence `Error = !`) since null
+/// cases will be handled by returning an option.
 fn fetch_server_players(
 	client: &Client<HttpsConnector<HttpConnector>>,
 	url: Uri,
