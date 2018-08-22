@@ -1,4 +1,4 @@
-FROM clux/muslrust:stable
+FROM clux/muslrust:nightly
 
 WORKDIR /build
 
