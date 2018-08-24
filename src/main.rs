@@ -52,6 +52,14 @@ fn login(_: &HttpRequest) -> HttpResponse {
 	HttpResponse::NotImplemented().body("")
 }
 
+fn ping(_: &HttpRequest) -> HttpResponse {
+	HttpResponse::Ok().body("{\"pong\":1}")
+}
+
+fn enter(_: &HttpRequest) -> HttpResponse {
+	HttpResponse::NotImplemented().body("")
+}
+
 fn main() {
 	std::env::set_var("RUST_LOG", "info");
 	std::env::set_var("RUST_BACKTRACE", "1");
@@ -65,6 +73,9 @@ fn main() {
 			.resource("/games", |r| r.method(Method::GET).f(games))
 			.resource("/clienterror", |r| r.method(Method::POST).f(clienterror))
 			.resource("/login", |r| r.method(Method::POST).f(login))
+			.resource("/ping", |r| r.method(Method::GET).f(ping))
+			.resource("/enter", |r| r.method(Method::POST).f(enter))
+
 	}).bind("0.0.0.0:9000")
 		.unwrap()
 		.shutdown_timeout(1)
