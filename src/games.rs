@@ -70,6 +70,75 @@ fn fetch_server_players(
 		.or_else(|_| Ok(None))
 }
 
+/// Get the data from the official airmash server.
+/// The future from this can never fail, 
+/// (hence `Error = !`) since all error cases
+/// are handled as part of control flow.
+fn fetch_official_server_info(
+	client: &Client<HttpsConnector<HttpConnector>>,
+) -> impl Future<Item = Vec<RegionSpec>, Error = !> {
+	client
+		.get("https://airma.sh/games".parse().unwrap())
+		.map_err(|e| {
+			warn!(
+				"Unable to connect to https://airma.sh/games to fetch official server player counts. Error description: {}",
+				e
+			);
+		})
+		.and_then(|response| {
+			if response.status() != StatusCode::OK {
+				warn!(
+					"{} responded with non-200 status {}",
+					"https://airma.sh/games",
+					response.status()
+				);
+				return Err(())
+			}
+
+			Ok(response)
+		})
+		.and_then(|response| {
+			response
+				.into_body()
+				.fold(vec![], |mut acc, chunk| -> Result<_, hyper::Error> {
+					acc.extend_from_slice(&*chunk);
+					Ok(acc)
+				})
+				.map_err(|e| {
+					warn!(
+						"Error occurred during request to {}: {}",
+						"https://airma.sh/games",
+						e
+					);
+				})
+		})
+		.and_then(|v: Vec<u8>| {
+			serde_json::from_slice(&v).map_err(|e| {
+				warn!(
+					"Server {} sent invalid JSON, causing error: {}",
+					"https://airma.sh/games",
+					e
+				);
+			})
+		})
+		.and_then(|v: AltGameSpec| {
+			serde_json::from_str(&v.data)
+				.map(|spec: Vec<AltRegionSpec>| -> Vec<RegionSpec> {
+					spec.into_iter().map(|x| x.into_normal()).collect()
+				})
+				.map_err(|e| {
+					warn!(
+						"Server {} sent invalid JSON, causing error: {}",
+						"https://airma.sh/games",
+						e
+					);
+				})
+		})
+		.or_else(|_|{
+			Ok(vec![])
+		})
+}
+
 /// Make an http request to all gameservers
 /// to query the number of players online.
 pub fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>> {
@@ -82,8 +151,10 @@ pub fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error
 		.map(|x| x.to_str().unwrap_or("XX"))
 		.unwrap_or("XX")
 		.to_owned();
+		
+	let official_regions = fetch_official_server_info(&client);
 
-	let regions = CONFIG.data.iter().cloned().map(move |region| {
+	let external_regions = CONFIG.data.iter().cloned().map(move |region| {
 		let requests = region
 			.games
 			.iter()
@@ -107,8 +178,16 @@ pub fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error
 		})
 	});
 
+	let external_regions = join_all(external_regions);
+
+	let regions = external_regions.join(official_regions)
+		.map(|(mut a, mut b)| {
+			a.append(&mut b);
+			a
+		});
+
 	Box::new(
-		join_all(regions)
+		regions
 			.map(|regions| GameSpec {
 				protocol: 5,
 				country: country,
