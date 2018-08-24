@@ -151,14 +151,14 @@ pub fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error
 		.map(|x| x.to_str().unwrap_or("XX"))
 		.unwrap_or("XX")
 		.to_owned();
-		
+
 	let official_regions = fetch_official_server_info(&client);
 
 	let external_regions = CONFIG.data.iter().cloned().map(move |region| {
 		let requests = region
 			.games
 			.iter()
-			.filter_map(|server| server.url.parse().ok())
+			.filter_map(|server| ("https://".to_owned() + &server.url).parse().ok())
 			.map(|server| fetch_server_players(&client, server))
 			.collect::<Vec<_>>();
 
@@ -170,6 +170,7 @@ pub fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error
 				.zip(counts.into_iter())
 				.map(|(game, count)| ServerSpec {
 					players: count,
+					url: "wss://".to_owned() + &game.url,
 					..game
 				})
 				.collect();

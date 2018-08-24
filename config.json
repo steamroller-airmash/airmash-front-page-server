@@ -6,7 +6,7 @@
 			"id": "dev",
 			"games": [
 				{
-					"url": "https://dev.airmash.steamroller.tk",
+					"url": "dev.airmash.steamroller.tk",
 					"type": 1,
 					"id": "dev",
 					"name": "Dev Server",
@@ -14,7 +14,7 @@
 					"host": "matrix"
 				},
 				{
-					"url": "https://ffa.airmash.steamroller.tk",
+					"url": "ffa.airmash.steamroller.tk",
 					"type": 1,
 					"id": "ffa",
 					"name": "FFA",
@@ -22,7 +22,7 @@
 					"host": "matrix"
 				},
 				{
-					"url": "https://ctf.airmash.steamroller.tk",
+					"url": "ctf.airmash.steamroller.tk",
 					"type": 2,
 					"id": "ctf",
 					"name": "CTF",

@@ -73,7 +73,7 @@ pub struct ServerResponse {
 impl AltServerSpec {
 	pub fn into_normal(self) -> ServerSpec {
 		ServerSpec {
-			url: "https://game-".to_owned() + &self.host + ".airma.sh/" + &self.id,
+			url: "wss://game-".to_owned() + &self.host + ".airma.sh/" + &self.id,
 			id: self.id,
 			ty: self.ty,
 			name: self.name,
