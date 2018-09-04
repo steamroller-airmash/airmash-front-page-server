@@ -1,4 +1,4 @@
-use serde::{Serializer};
+use serde::Serializer;
 use serde_json;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -40,21 +40,21 @@ pub struct AltServerSpec {
 	#[serde(rename = "nameShort")]
 	pub name_short: String,
 	pub players: u32,
-	pub host: String
+	pub host: String,
 }
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct AltRegionSpec {
 	pub name: String,
 	pub id: String,
-	pub games: Vec<AltServerSpec>
+	pub games: Vec<AltServerSpec>,
 }
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct AltGameSpec {
 	pub protocol: u8,
 	pub country: String,
-	pub data: String
+	pub data: String,
 }
 
 fn regionspec_serialize<S>(obj: &Vec<RegionSpec>, ser: S) -> Result<S::Ok, S::Error>
@@ -87,12 +87,9 @@ impl AltServerSpec {
 impl AltRegionSpec {
 	pub fn into_normal(self) -> RegionSpec {
 		RegionSpec {
-			games: self.games
-				.into_iter()
-				.map(|x| x.into_normal())
-				.collect(),
+			games: self.games.into_iter().map(|x| x.into_normal()).collect(),
 			id: self.id,
-			name: self.name
+			name: self.name,
 		}
 	}
 }

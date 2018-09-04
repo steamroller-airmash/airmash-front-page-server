@@ -71,7 +71,7 @@ fn fetch_server_players(
 }
 
 /// Get the data from the official airmash server.
-/// The future from this can never fail, 
+/// The future from this can never fail,
 /// (hence `Error = !`) since all error cases
 /// are handled as part of control flow.
 fn fetch_official_server_info(
@@ -92,7 +92,7 @@ fn fetch_official_server_info(
 					"https://airma.sh/games",
 					response.status()
 				);
-				return Err(())
+				return Err(());
 			}
 
 			Ok(response)
@@ -107,8 +107,7 @@ fn fetch_official_server_info(
 				.map_err(|e| {
 					warn!(
 						"Error occurred during request to {}: {}",
-						"https://airma.sh/games",
-						e
+						"https://airma.sh/games", e
 					);
 				})
 		})
@@ -116,8 +115,7 @@ fn fetch_official_server_info(
 			serde_json::from_slice(&v).map_err(|e| {
 				warn!(
 					"Server {} sent invalid JSON, causing error: {}",
-					"https://airma.sh/games",
-					e
+					"https://airma.sh/games", e
 				);
 			})
 		})
@@ -129,14 +127,11 @@ fn fetch_official_server_info(
 				.map_err(|e| {
 					warn!(
 						"Server {} sent invalid JSON, causing error: {}",
-						"https://airma.sh/games",
-						e
+						"https://airma.sh/games", e
 					);
 				})
 		})
-		.or_else(|_|{
-			Ok(vec![])
-		})
+		.or_else(|_| Ok(vec![]))
 }
 
 /// Make an http request to all gameservers
@@ -181,7 +176,8 @@ pub fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error
 
 	let external_regions = join_all(external_regions);
 
-	let regions = external_regions.join(official_regions)
+	let regions = external_regions
+		.join(official_regions)
 		.map(|(mut a, mut b)| {
 			a.append(&mut b);
 			a
