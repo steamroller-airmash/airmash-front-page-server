@@ -179,6 +179,12 @@ pub fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error
 	let regions = external_regions
 		.join(official_regions)
 		.map(|(mut a, mut b)| {
+			if let Some(mut reg) = a.get(0).map(|x| x.clone()) {
+				reg.name = "Closest".to_owned();
+				reg.id = "closest".to_owned();
+				a.push(reg);
+			}
+
 			a.append(&mut b);
 			a
 		});
