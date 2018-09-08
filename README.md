@@ -9,7 +9,9 @@ More specifically, it is responsible for the
 If you're looking for the actual game server
 see [this repo](https://github.com/steamroller-airmash/airmash-server)
 instead. If you're looking for the static pages
-for the front page see *TBD* instead.
+for the front page see
+[here](https://github.com/steamroller-airmash/airmash-mirror)
+instead.
 
 ## Configuration
 The configuration for regions and the servers within

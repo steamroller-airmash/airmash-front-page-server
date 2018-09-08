@@ -10,7 +10,7 @@ readme = "README.md"
 
 
 [profile.release]
-lto = true
+#lto = true
 debug = true
 
 [dependencies]
