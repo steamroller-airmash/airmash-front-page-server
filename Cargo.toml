@@ -15,7 +15,7 @@ debug = true
 
 [dependencies]
 actix = "*"
-actix-web = "*"
+actix-web = { version="*", features=["alpn"] }
 serde = { version="*", features=["derive"]  }
 serde_json = "*"
 futures = "0.1"
@@ -24,5 +24,6 @@ hyper = "0.12"
 hyper-tls = "0.3"
 lazy_static = "*"
 log = "*"
-sentry = "0.7"
-sentry-actix = "*"
+sentry = "0.10"
+sentry-actix = "0.12"
+percent-encoding = "*"

@@ -25,4 +25,6 @@ FROM alpine:latest
 
 COPY --from=0 /artifacts/server /server
 
+ENV RUST_LOG=info
+
 ENTRYPOINT [ "/server" ]
