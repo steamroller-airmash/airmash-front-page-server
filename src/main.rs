@@ -33,7 +33,7 @@ use std::str;
 use std::sync::Arc;
 
 use games::games;
-use login::{proxy_get, proxy_post, proxy_redirect};
+use login::*;
 use spec::*;
 
 const CONFIG_FILE: &'static str = include_str!("../config.json");
@@ -45,14 +45,14 @@ lazy_static! {
 /// Log the client error to sentry for investigation
 /// later. If a sentry dsn is not provided in the
 /// SENTRY_DSN this is a no-op
-fn clienterror(_req: &HttpRequest) -> HttpResponse {
-	//let hub: Arc<Hub> = Arc::from_request(req);
+fn clienterror(req: &HttpRequest) -> HttpResponse {
+	let hub: Arc<Hub> = Hub::from_request(req);
 	//req.extensions()
 	// .get::<Arc<Hub>>()
 	// .expect("Sentry Middleware was not registered")
 	// .clone();
 
-	//hub.capture_message("A client error occurred", Level::Error);
+	hub.capture_message("A client error occurred", Level::Error);
 
 	HttpResponse::Ok().body("")
 }
@@ -80,12 +80,10 @@ fn main() {
 			.resource("/ping", |r| r.method(Method::GET).f(ping))
 			.resource("/enter", |r| r.method(Method::POST).f(enter))
 			.resource("/login", |r| {
-				r.method(Method::POST)
-					.f(proxy_post("https://airma.sh/login"))
+				r.method(Method::POST).f(redirect("https://airma.sh/login"))
 			})
 			.resource("/auth", |r| {
-				r.method(Method::POST)
-					.f(proxy_post("https://airma.sh/auth"))
+				r.method(Method::POST).f(redirect("https://airma.sh/auth"))
 			})
 			.resource("/auth_facebook_cb", |r| {
 				r.method(Method::GET)
