@@ -1,7 +1,3 @@
-#![feature(never_type)]
-// TODO: Fixup clienterror
-#![allow(unused_imports)]
-
 extern crate actix;
 extern crate actix_web;
 #[macro_use]
@@ -15,7 +11,6 @@ extern crate serde_json;
 extern crate lazy_static;
 #[macro_use]
 extern crate log;
-extern crate percent_encoding;
 extern crate sentry;
 extern crate sentry_actix;
 
@@ -47,10 +42,6 @@ lazy_static! {
 /// SENTRY_DSN this is a no-op
 fn clienterror(req: &HttpRequest) -> HttpResponse {
 	let hub: Arc<Hub> = Hub::from_request(req);
-	//req.extensions()
-	// .get::<Arc<Hub>>()
-	// .expect("Sentry Middleware was not registered")
-	// .clone();
 
 	hub.capture_message("A client error occurred", Level::Error);
 

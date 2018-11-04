@@ -10,7 +10,7 @@ readme = "README.md"
 
 
 [profile.release]
-#lto = true
+lto = true
 debug = true
 
 [dependencies]
@@ -26,4 +26,3 @@ lazy_static = "*"
 log = "*"
 sentry = "0.12"
 sentry-actix = "*"
-percent-encoding = "*"

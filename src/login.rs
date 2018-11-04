@@ -10,8 +10,6 @@ use actix_web::{Error, HttpMessage, HttpRequest, HttpResponse};
 
 use futures::{lazy, Future};
 
-use percent_encoding::{utf8_percent_encode, PATH_SEGMENT_ENCODE_SET};
-
 pub fn proxy_redirect<U>(
 	uri: U,
 ) -> impl Fn(&HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>>

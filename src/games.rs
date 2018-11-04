@@ -13,14 +13,19 @@ use actix_web::{http, Error, HttpRequest, HttpResponse};
 use spec::*;
 use CONFIG;
 
+// Of course it's never used, that's the whole point
+// TODO: Replace with never type once that stabilizes
+#[allow(dead_code)]
+enum Never {}
+
 /// Get the player count from a specific server.
 /// Note that the future returned from this can
-/// never fail (hence `Error = !`) since null
+/// never fail (hence `Error = Never`) since null
 /// cases will be handled by returning an option.
 fn fetch_server_players(
 	client: &Client<HttpsConnector<HttpConnector>>,
 	url: Uri,
-) -> impl Future<Item = Option<u32>, Error = !> {
+) -> impl Future<Item = Option<u32>, Error = Never> {
 	client
 		.get(url.clone())
 		.map_err({
@@ -76,7 +81,7 @@ fn fetch_server_players(
 /// are handled as part of control flow.
 fn fetch_official_server_info(
 	client: &Client<HttpsConnector<HttpConnector>>,
-) -> impl Future<Item = Vec<RegionSpec>, Error = !> {
+) -> impl Future<Item = Vec<RegionSpec>, Error = Never> {
 	client
 		.get("https://airma.sh/games".parse().unwrap())
 		.map_err(|e| {
@@ -205,6 +210,6 @@ pub fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error
 					)
 					.body(resp)
 			})
-			.map_err(|e| e),
+			.map_err(|e| match e{}),
 	)
 }
