@@ -2,6 +2,8 @@ FROM clux/muslrust:nightly
 
 WORKDIR /build
 
+RUN cargo install cargo-build-deps
+
 # Cache downloaded packages to avoid redownloading
 # all dependencies every time a project file is 
 # changed on the server. Since this project downloads
@@ -11,8 +13,8 @@ ADD Cargo.toml Cargo.lock /build/
 RUN mkdir src
 
 # Fetch all dependencies to save bandwith
-RUN echo "fn main() {}" > src/main.rs
-RUN cargo fetch
+RUN touch src/lib.rs
+RUN cargo build-deps --release
 RUN rm -rf src
 
 ADD . /build

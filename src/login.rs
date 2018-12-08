@@ -134,9 +134,6 @@ where
 		let mut new_req = ClientRequest::post(&uri);
 		new_req.no_default_headers();
 		new_req.header("Host", "airma.sh");
-		for (name, value) in req.headers() {
-			new_req.header(name.clone(), value.clone());
-		}
 
 		let fut = req
 			.body()

@@ -24,6 +24,7 @@ use http::Method;
 use sentry::{Hub, Level};
 use sentry_actix::{ActixWebHubExt, SentryMiddleware};
 
+use std::env;
 use std::str;
 use std::sync::Arc;
 
@@ -53,14 +54,30 @@ fn ping(_: &HttpRequest) -> HttpResponse {
 }
 
 fn enter(_: &HttpRequest) -> HttpResponse {
-	HttpResponse::NotImplemented().body("")
+	HttpResponse::Ok().body("{\"result\":0}")
+}
+
+/// NOTE: Also initializes env_logger
+fn init_sentry() -> Option<sentry::internals::ClientInitGuard>{
+	if let Ok(dsn) = env::var("SENTRY_DSN") {
+		let guard = sentry::init(&*dsn);
+
+		sentry::integrations::env_logger::init(None, Default::default());
+		sentry::integrations::panic::register_panic_handler();
+
+		Some(guard)
+	}
+	else {
+		env_logger::init();
+
+		None
+	}
 }
 
 fn main() {
 	std::env::set_var("RUST_LOG", "info");
 	std::env::set_var("RUST_BACKTRACE", "1");
-	env_logger::init();
-	let _guard = sentry::init(());
+	let _guard = init_sentry();
 
 	server::new(move || {
 		App::new()
@@ -74,7 +91,10 @@ fn main() {
 				r.method(Method::POST).f(redirect("https://airma.sh/login"))
 			})
 			.resource("/auth", |r| {
-				r.method(Method::POST).f(redirect("https://airma.sh/auth"))
+				r.method(Method::POST).f(proxy_post("https://airma.sh/auth"))
+			})
+			.resource("/auth2", |r| {
+				r.method(Method::POST).f(proxy_post("https://airma.sh/auth"))
 			})
 			.resource("/auth_facebook_cb", |r| {
 				r.method(Method::GET)
