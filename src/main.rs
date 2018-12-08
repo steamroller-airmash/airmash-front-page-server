@@ -64,11 +64,15 @@ fn clienterror(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Err
 }
 
 fn ping(_: &HttpRequest) -> HttpResponse {
-	HttpResponse::Ok().body("{\"pong\":1}")
+	HttpResponse::Ok()
+		.header("Content-Type", "application/json; charset=utf-8")	
+		.body("{\"pong\":1}")
 }
 
 fn enter(_: &HttpRequest) -> HttpResponse {
-	HttpResponse::Ok().body("{\"result\":0}")
+	HttpResponse::Ok()
+		.header("Content-Type", "application/json; charset=utf-8")
+		.body("{\"result\":0}")
 }
 
 /// NOTE: Also initializes env_logger
