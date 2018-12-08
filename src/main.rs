@@ -18,8 +18,10 @@ mod games;
 mod login;
 mod spec;
 
-use actix_web::{http, middleware, server, App, HttpRequest, HttpResponse};
+use actix_web::{http, middleware, server, App, HttpRequest, HttpResponse, HttpMessage, Error};
+use actix_web::error::*;
 use http::Method;
+use futures::Future;
 
 use sentry::{Hub, Level};
 use sentry_actix::{ActixWebHubExt, SentryMiddleware};
@@ -41,12 +43,24 @@ lazy_static! {
 /// Log the client error to sentry for investigation
 /// later. If a sentry dsn is not provided in the
 /// SENTRY_DSN this is a no-op
-fn clienterror(req: &HttpRequest) -> HttpResponse {
+fn clienterror(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>> {
 	let hub: Arc<Hub> = Hub::from_request(req);
 
-	hub.capture_message("A client error occurred", Level::Error);
+	let res = req.body()
+		.map_err(Into::into)
+		.and_then(move |body| {
+			let msg = str::from_utf8(&*body)
+				.map_err(|_| ErrorBadRequest("Request data contained invalid UTF-8"))?;
 
-	HttpResponse::Ok().body("")
+			hub.capture_message(
+				&*format!("A client error occurred:\n{}", msg), 
+				Level::Info
+			);
+
+			Ok(HttpResponse::Ok().body(""))
+		});
+
+	Box::new(res)
 }
 
 fn ping(_: &HttpRequest) -> HttpResponse {
