@@ -7,6 +7,7 @@ extern crate futures;
 extern crate hyper;
 extern crate hyper_tls;
 extern crate serde_json;
+extern crate serde_urlencoded;
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
@@ -17,18 +18,15 @@ extern crate sentry_actix;
 mod games;
 mod login;
 mod spec;
+mod clienterror;
 
-use actix_web::{http, middleware, server, App, HttpRequest, HttpResponse, HttpMessage, Error};
-use actix_web::error::*;
+use actix_web::{http, middleware, server, App, HttpRequest, HttpResponse};
 use http::Method;
-use futures::Future;
 
-use sentry::{Hub, Level};
-use sentry_actix::{ActixWebHubExt, SentryMiddleware};
+use sentry_actix::SentryMiddleware;
 
 use std::env;
 use std::str;
-use std::sync::Arc;
 
 use games::games;
 use login::*;
@@ -38,29 +36,6 @@ const CONFIG_FILE: &'static str = include_str!("../config.json");
 
 lazy_static! {
 	static ref CONFIG: GameSpec = serde_json::from_str(CONFIG_FILE).unwrap();
-}
-
-/// Log the client error to sentry for investigation
-/// later. If a sentry dsn is not provided in the
-/// SENTRY_DSN this is a no-op
-fn clienterror(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>> {
-	let hub: Arc<Hub> = Hub::from_request(req);
-
-	let res = req.body()
-		.map_err(Into::into)
-		.and_then(move |body| {
-			let msg = str::from_utf8(&*body)
-				.map_err(|_| ErrorBadRequest("Request data contained invalid UTF-8"))?;
-
-			hub.capture_message(
-				&*format!("A client error occurred:\n{}", msg), 
-				Level::Info
-			);
-
-			Ok(HttpResponse::Ok().body(""))
-		});
-
-	Box::new(res)
 }
 
 fn ping(_: &HttpRequest) -> HttpResponse {
@@ -102,7 +77,7 @@ fn main() {
 			.middleware(middleware::Logger::default())
 			.middleware(SentryMiddleware::new())
 			.resource("/games", |r| r.method(Method::GET).f(games))
-			.resource("/clienterror", |r| r.method(Method::POST).f(clienterror))
+			.resource("/clienterror", |r| r.method(Method::POST).f(clienterror::clienterror))
 			.resource("/ping", |r| r.method(Method::GET).f(ping))
 			.resource("/enter", |r| r.method(Method::POST).f(enter))
 			.resource("/login", |r| {

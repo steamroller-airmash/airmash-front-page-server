@@ -18,6 +18,7 @@ actix = "*"
 actix-web = { version="*", features=["alpn"] }
 serde = { version="*", features=["derive"]  }
 serde_json = "*"
+serde_urlencoded = "*"
 futures = "0.1"
 env_logger = "*"
 hyper = "0.12"
