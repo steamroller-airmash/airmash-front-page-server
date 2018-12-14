@@ -210,6 +210,6 @@ pub fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error
 					)
 					.body(resp)
 			})
-			.map_err(|e| match e{}),
+			.map_err(|e| match e {}),
 	)
 }

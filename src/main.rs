@@ -15,10 +15,10 @@ extern crate log;
 extern crate sentry;
 extern crate sentry_actix;
 
+mod clienterror;
 mod games;
 mod login;
 mod spec;
-mod clienterror;
 
 use actix_web::{http, middleware, server, App, HttpRequest, HttpResponse};
 use http::Method;
@@ -40,7 +40,7 @@ lazy_static! {
 
 fn ping(_: &HttpRequest) -> HttpResponse {
 	HttpResponse::Ok()
-		.header("Content-Type", "application/json; charset=utf-8")	
+		.header("Content-Type", "application/json; charset=utf-8")
 		.body("{\"pong\":1}")
 }
 
@@ -51,7 +51,7 @@ fn enter(_: &HttpRequest) -> HttpResponse {
 }
 
 /// NOTE: Also initializes env_logger
-fn init_sentry() -> Option<sentry::internals::ClientInitGuard>{
+fn init_sentry() -> Option<sentry::internals::ClientInitGuard> {
 	if let Ok(dsn) = env::var("SENTRY_DSN") {
 		let guard = sentry::init(&*dsn);
 
@@ -59,8 +59,7 @@ fn init_sentry() -> Option<sentry::internals::ClientInitGuard>{
 		sentry::integrations::panic::register_panic_handler();
 
 		Some(guard)
-	}
-	else {
+	} else {
 		env_logger::init();
 
 		None
@@ -77,17 +76,21 @@ fn main() {
 			.middleware(middleware::Logger::default())
 			.middleware(SentryMiddleware::new())
 			.resource("/games", |r| r.method(Method::GET).f(games))
-			.resource("/clienterror", |r| r.method(Method::POST).f(clienterror::clienterror))
+			.resource("/clienterror", |r| {
+				r.method(Method::POST).f(clienterror::clienterror)
+			})
 			.resource("/ping", |r| r.method(Method::GET).f(ping))
 			.resource("/enter", |r| r.method(Method::POST).f(enter))
 			.resource("/login", |r| {
 				r.method(Method::POST).f(redirect("https://airma.sh/login"))
 			})
 			.resource("/auth", |r| {
-				r.method(Method::POST).f(proxy_post("https://airma.sh/auth"))
+				r.method(Method::POST)
+					.f(proxy_post("https://airma.sh/auth"))
 			})
 			.resource("/auth2", |r| {
-				r.method(Method::POST).f(proxy_post("https://airma.sh/auth"))
+				r.method(Method::POST)
+					.f(proxy_post("https://airma.sh/auth"))
 			})
 			.resource("/auth_facebook_cb", |r| {
 				r.method(Method::GET)
@@ -129,8 +132,9 @@ fn main() {
 				r.method(Method::GET)
 					.f(proxy_redirect("https://airma.sh/auth_twitch"))
 			})
-	}).bind("0.0.0.0:9000")
-		.unwrap()
-		.shutdown_timeout(1)
-		.run();
+	})
+	.bind("0.0.0.0:9000")
+	.unwrap()
+	.shutdown_timeout(1)
+	.run();
 }
