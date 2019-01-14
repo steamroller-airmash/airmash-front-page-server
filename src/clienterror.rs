@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 use std::collections::HashMap;
 use std::str;
 use std::sync::Arc;
@@ -14,9 +16,10 @@ use sentry_actix::ActixWebHubExt;
 /// later. If a sentry dsn is not provided in the
 /// SENTRY_DSN this is a no-op
 pub fn clienterror(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>> {
-	let hub: Arc<Hub> = Hub::from_request(req);
+	//let _hub: Arc<Hub> = Hub::from_request(req);
 
-	let res = req.body().map_err(Into::into).and_then(move |body| {
+	let res = req.body().map_err(Into::into).and_then(move |_body| {
+		/*
 		let msg: &str = str::from_utf8(&*body).unwrap_or("");
 		let map: HashMap<&str, &str> = serde_urlencoded::from_bytes(&*body).unwrap_or_default();
 
@@ -29,7 +32,7 @@ pub fn clienterror(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error =
 		hub.capture_message(
 			&*format!("An unhandled client error occurred:\n {}", msg),
 			Level::Info,
-		);
+		);*/
 
 		Ok(HttpResponse::Ok().body(""))
 	});
