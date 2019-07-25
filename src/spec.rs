@@ -69,30 +69,3 @@ where
 pub struct ServerResponse {
 	pub players: u32,
 }
-
-impl AltServerSpec {
-	pub fn into_normal(self) -> ServerSpec {
-		ServerSpec {
-			url: "wss://".to_owned()
-				+ &self.host[0..self.host.len() - 3]
-				+ ".airmash.online/"
-				+ &self.id,
-			id: self.id,
-			ty: self.ty,
-			name: self.name,
-			name_short: self.name_short,
-			players: Some(self.players),
-			host: self.host,
-		}
-	}
-}
-
-impl AltRegionSpec {
-	pub fn into_normal(self) -> RegionSpec {
-		RegionSpec {
-			games: self.games.into_iter().map(|x| x.into_normal()).collect(),
-			id: self.id,
-			name: self.name,
-		}
-	}
-}

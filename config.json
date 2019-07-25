@@ -30,6 +30,52 @@
 					"host": "matrix"
 				}
 			]
+		},
+		{
+			"name": "Europe",
+			"id": "eu",
+			"games": [
+				{
+					"type": 1,
+					"id": "ffa",
+					"name": "Free For All",
+					"nameShort": "FFA",
+					"host": "eu-airmash1-foo",
+					"url": "eu-airmash1-foo.westeurope.cloudapp.azure.com/ffa"
+				},
+				{
+					"type": 2,
+					"id": "ctf1",
+					"name": "Capture The Flag #1",
+					"nameShort": "CTF #1",
+					"host": "eu-airmash1-foo",
+					"url": "lags.win/ctf"
+				},
+				{
+					"type": 2,
+					"id": "ctf2",
+					"name": "Capture the Flag #2",
+					"nameShort": "CTF #2",
+					"host": "eu-airmash1-foo",
+					"url": "eu-airmash1-foo.westeurope.cloudapp.azure.com/ctf?2"
+				},
+				{
+					"type": 4,
+					"id": "dev?1",
+					"name": "Test Server #1",
+					"nameShort": "TEST #1",
+					"host": "eu-airmash1-foo",
+					"url": "uk.test.airmash.online/dev?1"
+				},
+				{
+					"type": 4,
+					"id": "dev?2",
+					"name": "Test Server #2",
+					"nameShort": "TEST #2",
+					"host": "eu-airmash1-foo",
+					"url": "uk.test.airmash.online/dev?2"
+				}
+			]
 		}
 	]
 }
