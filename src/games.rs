@@ -77,7 +77,7 @@ fn fetch_server_players(
 
 /// Make an http request to all gameservers
 /// to query the number of players online.
-pub fn games(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>> {
+pub fn games(req: &HttpRequest) -> Box<dyn Future<Item = HttpResponse, Error = Error>> {
 	let https = HttpsConnector::new(4).expect("Failed to create HttpsConnector");
 	let client: Client<_, Body> = Client::builder().build(https);
 

@@ -15,7 +15,7 @@ use sentry_actix::ActixWebHubExt;
 /// Log the client error to sentry for investigation
 /// later. If a sentry dsn is not provided in the
 /// SENTRY_DSN this is a no-op
-pub fn clienterror(req: &HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>> {
+pub fn clienterror(req: &HttpRequest) -> Box<dyn Future<Item = HttpResponse, Error = Error>> {
 	//let _hub: Arc<Hub> = Hub::from_request(req);
 
 	let res = req.body().map_err(Into::into).and_then(move |_body| {

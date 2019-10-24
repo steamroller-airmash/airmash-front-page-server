@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::convert::AsRef;
 use std::str;
 
@@ -12,7 +14,7 @@ use futures::{lazy, Future};
 
 pub fn proxy_redirect<U>(
 	uri: U,
-) -> impl Fn(&HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>>
+) -> impl Fn(&HttpRequest) -> Box<dyn Future<Item = HttpResponse, Error = Error>>
 where
 	U: AsRef<str>,
 {
@@ -50,7 +52,7 @@ where
 
 pub fn proxy_get<U>(
 	uri: U,
-) -> impl Fn(&HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>>
+) -> impl Fn(&HttpRequest) -> Box<dyn Future<Item = HttpResponse, Error = Error>>
 where
 	U: AsRef<str>,
 {
@@ -115,7 +117,7 @@ where
 #[allow(dead_code)]
 pub fn proxy_post<U>(
 	uri: U,
-) -> impl Fn(&HttpRequest) -> Box<Future<Item = HttpResponse, Error = Error>>
+) -> impl Fn(&HttpRequest) -> Box<dyn Future<Item = HttpResponse, Error = Error>>
 where
 	U: AsRef<str>,
 {
