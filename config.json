@@ -1,36 +1,48 @@
 {
-	"protocol": 5,
-	"data": [
-		{
-			"name": "Dev",
-			"id": "dev",
-			"games": [
-				{
-					"url": "game.airmash.steamroller.tk/dev",
-					"type": 4,
-					"id": "dev",
-					"name": "Dev Server",
-					"nameShort": "DEV",
-					"host": "matrix"
-				},
-				{
-					"url": "game.airmash.steamroller.tk/ffa",
-					"type": 1,
-					"id": "ffa",
-					"name": "FFA",
-					"nameShort": "FFA",
-					"host": "matrix"
-				},
-				{
-					"url": "game.airmash.steamroller.tk/ctf",
-					"type": 2,
-					"id": "ctf",
-					"name": "CTF",
-					"nameShort": "CTF",
-					"host": "matrix"
-				}
-			]
-		},
+  "protocol": 5,
+  "data": [
+    {
+      "name": "US",
+      "id": "us",
+      "games": [
+        {
+            "type": 1,
+            "id": "ffa",
+            "name": "Free For All",
+            "nameShort": "FFA",
+            "players": 1,
+            "host": "game.airmash.steamroller.tk",
+            "path": "ffa"
+        },
+        {
+            "type": 2,
+            "id": "ctf1",
+            "name": "Capture The Flag #1",
+            "nameShort": "CTF #1",
+            "players": 2,
+            "host": "game.airmash.steamroller.tk",
+            "path": "ctf"
+        },
+        {
+            "type": 2,
+            "id": "ctf2",
+            "name": "Capture The Flag #2",
+            "nameShort": "CTF #2",
+            "players": 12,
+            "host": "www.airmash.xyz",
+            "path": "ctf1"
+        },
+        {
+            "type": 4,
+            "id": "dev",
+            "name": "Test Server",
+            "nameShort": "Test Server",
+            "players": 1,
+            "host": "game.airmash.steamroller.tk",
+            "path": "dev"
+        }
+      ]
+    },
     {
       "name": "Europe",
       "id": "eu",
@@ -40,38 +52,38 @@
           "id": "ffa1",
           "name": "Free For All #1",
           "nameShort": "FFA #1",
+          "players": 6,
           "host": "eu.airmash.online",
-          "path": "ffa",
-          "url": "eu.airmash.online/ffa"
+          "path": "ffa1"
         },
         {
           "type": 1,
           "id": "ffa2",
           "name": "Free For All #2",
           "nameShort": "FFA #2",
+          "players": 8,
           "host": "eu.airmash.online",
-          "path": "ffa2",
-          "url": "eu.airmash.online/ffa2"
+          "path": "ffa2"
         },
         {
           "type": 2,
           "id": "ctf1",
           "name": "Capture The Flag #1",
           "nameShort": "CTF #1",
+          "players": 13,
           "host": "lags.win",
-          "path": "ctf",
-          "url": "lags.win/ctf"
+          "path": "ctf"
         },
         {
           "type": 4,
-          "id": "dev2",
-          "name": "Test Server #1",
-          "nameShort": "Test Server #1",
+          "id": "dev-nfb",
+          "name": "No flying backwards",
+          "nameShort": "No flying backwards",
+          "players": 5,
           "host": "uk.test.airmash.online",
-          "path": "dev",
-          "url": "uk.test.airmash.online/dev"
+          "path": "dev1"
         }
       ]
     }
-	]
+  ]
 }

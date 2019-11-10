@@ -3,10 +3,11 @@ name = "airmash-front-page-server"
 version = "0.0.1"
 authors = ["STEAMROLLER"]
 license = "APACHE-2.0 OR MIT"
-description = "Dynamic Endpoint Backend for Airmash Frontpage"
+description = "Dynamic Endpoint Backend for the Airmash Frontpage"
 publish = false
 repository = 'https://github.com/steamroller-airmash/airmash-front-page-server'
 readme = "README.md"
+edition = "2018"
 
 
 [profile.release]
@@ -14,16 +15,12 @@ readme = "README.md"
 debug = true
 
 [dependencies]
-actix = "*"
-actix-web = { version="*", features=["tls"] }
-serde = { version="*", features=["derive"]  }
-serde_json = "*"
-serde_urlencoded = "*"
-futures = "0.1"
-env_logger = "*"
+actix-web = "1.0"
+serde = { version="1.0", features=["derive"]  }
+serde_json = "1.0"
+futures = { version="0.3", features=["compat"] }
+env_logger = "0.7"
 hyper = "0.12"
 hyper-tls = "0.3"
-lazy_static = "*"
-log = "*"
-sentry = "0.12"
-sentry-actix = "*"
+lazy_static = "1.0"
+log = "0.4"

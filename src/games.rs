@@ -2,86 +2,85 @@ use hyper;
 use serde_json;
 
 use hyper::client::HttpConnector;
-use hyper::{Body, Client, StatusCode, Uri};
+use hyper::{Client, Uri};
 use hyper_tls::HttpsConnector;
 
 use futures::future::join_all;
-use futures::{Future, Stream};
+use futures::FutureExt;
+use futures::compat::Compat01As03;
 
 use actix_web::{http, Error, HttpRequest, HttpResponse};
 
-use spec::*;
-use CONFIG;
+use crate::spec::*;
+use crate::CONFIG;
 
 // Of course it's never used, that's the whole point
 // TODO: Replace with never type once that stabilizes
 #[allow(dead_code)]
 enum Never {}
 
+lazy_static! {
+	static ref CLIENT: Client<HttpsConnector<HttpConnector>> = {
+		let https = HttpsConnector::new(4).expect("Failed to create HttpsConnector");
+		Client::builder().build(https)
+	};
+}
+
+
 /// Get the player count from a specific server.
 /// Note that the future returned from this can
 /// never fail (hence `Error = Never`) since null
 /// cases will be handled by returning an option.
-fn fetch_server_players(
+async fn fetch_server_players(
 	client: &Client<HttpsConnector<HttpConnector>>,
 	url: Uri,
-) -> impl Future<Item = Option<u32>, Error = Never> {
-	client
-		.get(url.clone())
-		.map_err({
-			let url = url.clone();
-			move |e| {
-				warn!(
-					"Unable to connect to {} to fetch player count. Error description: {}",
-					url, e
-				);
-			}
-		})
-		.and_then({
-			let url = url.clone();
-			move |response| {
-				if response.status() != StatusCode::OK {
-					warn!(
-						"{} responded with non-200 status {}",
-						url,
-						response.status()
-					);
-					return Err(());
-				}
+) -> Option<u32> {
+	use hyper::rt::Stream as _;
 
-				Ok(response)
-			}
-		})
-		.and_then({
-			let url = url.clone();
-			move |response| {
-				response
-					.into_body()
-					.fold(vec![], |mut acc, chunk| -> Result<Vec<_>, hyper::Error> {
-						acc.extend_from_slice(&*chunk);
-						Ok(acc)
-					})
-					.map_err(move |e| {
-						warn!("Error occurred during request to {}: {}", url, e);
-					})
-			}
-		})
-		.and_then(move |v: Vec<u8>| {
-			serde_json::from_slice(&v).map_err(|e| {
-				warn!("Server {} sent invalid JSON, causing error: {}", url, e);
-			})
-		})
-		.map(|v: ServerResponse| Some(v.players))
-		.or_else(|_| Ok(None))
+	let response = match Compat01As03::new(client.get(url.clone())).await {
+		Ok(res) => res,
+		Err(e) => {
+			warn!(
+				"Unable to connect to {} to fetch player count. Error description: {}",
+				url, e
+			);
+
+			return None;
+		}
+	};
+
+	let fut = response
+		.into_body()
+		.fold(vec![], |mut acc, chunk| -> Result<Vec<_>, hyper::Error> {
+			acc.extend_from_slice(&*chunk);
+			Ok(acc)
+		});
+	
+	let bytes: Vec<u8> = match Compat01As03::new(fut).await {
+		Ok(bytes) => bytes,
+		Err(e) => {
+			warn!("Error occurred during request to {}: {}", url, e);
+			return None;
+		}
+	};
+
+	let res = match serde_json::from_slice(&bytes) {
+		Ok(res) => res,
+		Err(e) => {
+			warn!("Server {} sent invalid JSON, causing error: {}", url, e);
+			return None;
+		}
+	};
+	
+	Some(res)
 }
 
 /// Make an http request to all gameservers
 /// to query the number of players online.
-pub fn games(req: &HttpRequest) -> Box<dyn Future<Item = HttpResponse, Error = Error>> {
-	let https = HttpsConnector::new(4).expect("Failed to create HttpsConnector");
-	let client: Client<_, Body> = Client::builder().build(https);
+pub async fn games(req: HttpRequest) -> Result<HttpResponse, Error> {
+	let client = &*CLIENT;
 
-	let headers = req.request().headers();
+	let headers = req.headers();
 	let country = headers
 		.get("CF-IPCountry")
 		.map(|x| x.to_str().unwrap_or("XX"))
@@ -92,7 +91,7 @@ pub fn games(req: &HttpRequest) -> Box<dyn Future<Item = HttpResponse, Error = E
 		let requests = region
 			.games
 			.iter()
-			.filter_map(|server| ("https://".to_owned() + &server.url).parse().ok())
+			.filter_map(|server| ("https://".to_owned() + &server.url()).parse().ok())
 			.map(|server| fetch_server_players(&client, server))
 			.collect::<Vec<_>>();
 
@@ -104,7 +103,7 @@ pub fn games(req: &HttpRequest) -> Box<dyn Future<Item = HttpResponse, Error = E
 				.zip(counts.into_iter())
 				.map(|(game, count)| ServerSpec {
 					players: count,
-					url: "wss://".to_owned() + &game.url,
+					url: "wss://".to_owned() + &game.url(),
 					..game
 				})
 				.collect();
@@ -113,26 +112,22 @@ pub fn games(req: &HttpRequest) -> Box<dyn Future<Item = HttpResponse, Error = E
 		})
 	});
 
-	let external_regions = join_all(external_regions);
+	let regions = join_all(external_regions).await;
+	let spec = GameSpec {
+		protocol: 5,
+		country,
+		data: regions
+	};
 
-	let regions = external_regions;
+	let resp = serde_json::to_string(&spec)
+		.expect("Failed to serialize the response");
 
-	Box::new(
-		regions
-			.map(|regions| GameSpec {
-				protocol: 5,
-				country: country,
-				data: regions,
-			})
-			.map(|spec| serde_json::to_string(&spec).unwrap())
-			.map(|resp| {
-				HttpResponse::Ok()
-					.header(
-						http::header::CONTENT_TYPE,
-						"application/json; charset=utf-8",
-					)
-					.body(resp)
-			})
-			.map_err(|e| match e {}),
+	Ok(
+		HttpResponse::Ok()
+			.header(
+				http::header::CONTENT_TYPE,
+				"application/json; charset=utf-8"
+			)
+			.body(resp)
 	)
 }

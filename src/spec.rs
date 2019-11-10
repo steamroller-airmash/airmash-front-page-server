@@ -1,8 +1,11 @@
-use serde::Serializer;
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde_json;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(remote = "ServerSpec")]
 pub struct ServerSpec {
+	#[serde(getter = "ServerSpec::url")]
+	#[serde(default)]
 	pub url: String,
 	#[serde(rename = "type")]
 	pub ty: u8,
@@ -13,6 +16,29 @@ pub struct ServerSpec {
 	#[serde(skip_deserializing)]
 	pub players: Option<u32>,
 	pub host: String,
+	pub path: String
+}
+
+impl Serialize for ServerSpec {
+	fn serialize<S: Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+		ServerSpec::serialize(self, ser)
+	}
+}
+
+impl<'de> Deserialize<'de> for ServerSpec {
+	fn deserialize<D: Deserializer<'de>>(de: D) -> Result<Self, D::Error> {
+		ServerSpec::deserialize(de)
+	}
+}
+
+impl ServerSpec {
+	pub fn url(&self) -> String {
+		if self.url == "" {
+			self.host.clone() + "/" + &self.path
+		} else {
+			self.url.clone()
+		}
+	}
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

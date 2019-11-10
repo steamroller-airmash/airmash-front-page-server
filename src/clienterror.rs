@@ -1,41 +1,12 @@
-#![allow(unused_imports)]
+use actix_web::{Error, HttpRequest, HttpResponse};
 
-use std::collections::HashMap;
-use std::str;
-use std::sync::Arc;
 
-use serde_urlencoded;
+/// This is currently a noop - maybe it can be implemented
+/// at some point?
+/// 
+/// Would be useful for finding client errors in the wild
+pub async fn clienterror(_: HttpRequest) -> Result<HttpResponse, Error> {
+	// TODO: Maybe implement this?
 
-use actix_web::{Error, HttpMessage, HttpRequest, HttpResponse};
-use futures::Future;
-
-use sentry::{Hub, Level};
-use sentry_actix::ActixWebHubExt;
-
-/// Log the client error to sentry for investigation
-/// later. If a sentry dsn is not provided in the
-/// SENTRY_DSN this is a no-op
-pub fn clienterror(req: &HttpRequest) -> Box<dyn Future<Item = HttpResponse, Error = Error>> {
-	//let _hub: Arc<Hub> = Hub::from_request(req);
-
-	let res = req.body().map_err(Into::into).and_then(move |_body| {
-		/*
-		let msg: &str = str::from_utf8(&*body).unwrap_or("");
-		let map: HashMap<&str, &str> = serde_urlencoded::from_bytes(&*body).unwrap_or_default();
-
-		hub.configure_scope(move |scope| {
-			for (k, v) in map {
-				scope.set_extra(k, v.to_owned().into());
-			}
-		});
-
-		hub.capture_message(
-			&*format!("An unhandled client error occurred:\n {}", msg),
-			Level::Info,
-		);*/
-
-		Ok(HttpResponse::Ok().body(""))
-	});
-
-	Box::new(res)
+	Ok(HttpResponse::Ok().body(""))
 }
