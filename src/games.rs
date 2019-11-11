@@ -64,7 +64,7 @@ async fn fetch_server_players(
 		}
 	};
 
-	let res = match serde_json::from_slice(&bytes) {
+	let res: ServerResponse = match serde_json::from_slice(&bytes) {
 		Ok(res) => res,
 		Err(e) => {
 			warn!("Server {} sent invalid JSON, causing error: {}", url, e);
@@ -72,7 +72,7 @@ async fn fetch_server_players(
 		}
 	};
 	
-	Some(res)
+	Some(res.players)
 }
 
 /// Make an http request to all gameservers
