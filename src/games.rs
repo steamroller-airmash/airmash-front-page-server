@@ -12,7 +12,7 @@ use futures::compat::Compat01As03;
 use actix_web::{http, Error, HttpRequest, HttpResponse};
 
 use crate::spec::*;
-use crate::CONFIG;
+use crate::config::get_config;
 
 // Of course it's never used, that's the whole point
 // TODO: Replace with never type once that stabilizes
@@ -87,7 +87,8 @@ pub async fn games(req: HttpRequest) -> Result<HttpResponse, Error> {
 		.unwrap_or("XX")
 		.to_owned();
 
-	let external_regions = CONFIG.data.iter().cloned().map(move |region| {
+	let config = get_config();
+	let external_regions = config.data.iter().cloned().map(move |region| {
 		let requests = region
 			.games
 			.iter()

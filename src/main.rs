@@ -6,6 +6,7 @@ extern crate log;
 mod clienterror;
 mod games;
 mod spec;
+mod config;
 
 use actix_web::{http, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer};
 use futures::prelude::*;
@@ -13,13 +14,8 @@ use futures::prelude::*;
 use std::str;
 
 use games::games;
-use spec::*;
 
 const CONFIG_FILE: &'static str = include_str!("../config.json");
-
-lazy_static! {
-	static ref CONFIG: GameSpec = serde_json::from_str(CONFIG_FILE).unwrap();
-}
 
 fn ping(_: HttpRequest) -> HttpResponse {
 	HttpResponse::Ok()
@@ -39,19 +35,8 @@ fn gone(_: HttpRequest) -> HttpResponse {
 
 /// NOTE: Also initializes env_logger
 fn init_sentry() -> Option<()> {
-	// Option<sentry::internals::ClientInitGuard> {
-	// if let Ok(dsn) = env::var("SENTRY_DSN") {
-	// 	let guard = sentry::init(&*dsn);
-
-	// 	sentry::integrations::env_logger::init(None, Default::default());
-	// 	sentry::integrations::panic::register_panic_handler();
-
-	// 	Some(guard)
-	// } else {
 	env_logger::init();
-
 	None
-	// }
 }
 
 fn games_wrapper(
@@ -67,8 +52,12 @@ fn clienterror_wrapper(
 
 fn main() {
 	std::env::set_var("RUST_LOG", "info");
-	std::env::set_var("RUST_BACKTRACE", "1");
+	std::env::set_var("RUST_BACKTRACE", "full");
 	let _guard = init_sentry();
+
+	let _handle = std::thread::spawn(|| {
+		crate::config::background_update();
+	});
 
 	let appfn = move || {
 		App::new()
