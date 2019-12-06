@@ -59,7 +59,7 @@ fn parse_config(config: &str, regions: &str) -> Option<GameSpec> {
 		let host = fields.next()?.to_string();
 		let path = fields.next()?.to_string();
 
-		let url = "wss://".to_string() + &host + "/" + &path;
+		let url = host.clone() + "/" + &path;
 
 		let spec = ServerSpec {
 			url,
