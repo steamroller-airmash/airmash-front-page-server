@@ -111,6 +111,7 @@ pub async fn games(req: HttpRequest) -> Result<HttpResponse, Error> {
 				.iter()
 				.cloned()
 				.zip(counts.into_iter())
+				.filter(|(_, count)| count.is_some())
 				.map(|(game, count)| ServerSpec {
 					players: count,
 					url: "wss://".to_owned() + &game.url(),
