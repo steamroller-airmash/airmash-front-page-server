@@ -27,11 +27,11 @@ const TIMEOUT_DURATION: Option<Duration> = Some(Duration::from_millis(3000));
 lazy_static! {
 	static ref CLIENT: Client<TimeoutConnector<HttpsConnector<HttpConnector>>> = {
 		let https = HttpsConnector::new(4).expect("Failed to create HttpsConnector");
-    let mut connector = TimeoutConnector::new(https);
-    connector.set_connect_timeout(TIMEOUT_DURATION);
-    connector.set_read_timeout(TIMEOUT_DURATION);
-    connector.set_write_timeout(TIMEOUT_DURATION);
-    Client::builder().build(connector)
+		let mut connector = TimeoutConnector::new(https);
+		connector.set_connect_timeout(TIMEOUT_DURATION);
+		connector.set_read_timeout(TIMEOUT_DURATION);
+		connector.set_write_timeout(TIMEOUT_DURATION);
+		Client::builder().build(connector)
 	};
 }
 
