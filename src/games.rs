@@ -4,6 +4,9 @@ use serde_json;
 use hyper::client::HttpConnector;
 use hyper::{Client, Uri};
 use hyper_tls::HttpsConnector;
+use hyper_timeout::TimeoutConnector;
+
+use std::time::Duration;
 
 use futures::future::join_all;
 use futures::FutureExt;
@@ -19,10 +22,16 @@ use crate::config::get_config;
 #[allow(dead_code)]
 enum Never {}
 
+const TIMEOUT_DURATION: Option<Duration> = Some(Duration::from_millis(3000));
+
 lazy_static! {
-	static ref CLIENT: Client<HttpsConnector<HttpConnector>> = {
+	static ref CLIENT: Client<TimeoutConnector<HttpsConnector<HttpConnector>>> = {
 		let https = HttpsConnector::new(4).expect("Failed to create HttpsConnector");
-		Client::builder().build(https)
+		let mut connector = TimeoutConnector::new(https);
+		connector.set_connect_timeout(TIMEOUT_DURATION);
+		connector.set_read_timeout(TIMEOUT_DURATION);
+		connector.set_write_timeout(TIMEOUT_DURATION);
+		Client::builder().build(connector)
 	};
 }
 
@@ -32,7 +41,7 @@ lazy_static! {
 /// never fail (hence `Error = Never`) since null
 /// cases will be handled by returning an option.
 async fn fetch_server_players(
-	client: &Client<HttpsConnector<HttpConnector>>,
+	client: &Client<TimeoutConnector<HttpsConnector<HttpConnector>>>,
 	url: Uri,
 ) -> Option<u32> {
 	use hyper::rt::Stream as _;
@@ -102,6 +111,7 @@ pub async fn games(req: HttpRequest) -> Result<HttpResponse, Error> {
 				.iter()
 				.cloned()
 				.zip(counts.into_iter())
+				.filter(|(_, count)| count.is_some())
 				.map(|(game, count)| ServerSpec {
 					players: count,
 					url: "wss://".to_owned() + &game.url(),

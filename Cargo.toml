@@ -22,6 +22,7 @@ futures = { version="0.3", features=["compat"] }
 env_logger = "0.7"
 hyper = "0.12"
 hyper-tls = "0.3"
+hyper-timeout = "0.2"
 lazy_static = "1.0"
 log = "0.4"
 attohttpc = "0.6"
